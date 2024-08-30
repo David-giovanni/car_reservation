@@ -106,4 +106,4 @@ app.delete("/home/:id", async (req, res) => {
   }
 });
 
-app.listen(4000, () => console.log("Server on localhost:4000"));
+app.listen(process.env.PORT, () => console.log("Server on localhost:4000"));
