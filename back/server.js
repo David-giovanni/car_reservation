@@ -1,9 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
-
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
+  user: "postgres",
+  password: "gio",
+  host: "localhost",
+  port: 5432,
+  database: "test",
 });
 
 const app = express();
@@ -106,4 +109,4 @@ app.delete("/home/:id", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT, () => console.log("Server on localhost:4000"));
+app.listen(4000, () => console.log("Server on localhost:4000"));
