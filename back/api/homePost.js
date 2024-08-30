@@ -1,0 +1,67 @@
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  user: "postgres",
+  password: "gio",
+  host: "localhost",
+  port: 5432,
+  database: "test",
+});
+
+module.exports = async (req, res) => {
+  if (req.method === "POST") {
+    const {
+      car,
+      start_date,
+      end_date,
+      start_time,
+      end_time,
+      name,
+      purpose,
+      code,
+    } = req.body;
+
+    try {
+      const queryReservation = `
+        INSERT INTO reservations (car, start_date, end_date, start_time, end_time, name, purpose, code)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *;`;
+
+      const valuesReservation = [
+        car,
+        start_date,
+        end_date,
+        start_time,
+        end_time,
+        name,
+        purpose,
+        code,
+      ];
+
+      const resultReservation = await pool.query(
+        queryReservation,
+        valuesReservation
+      );
+      const insertedReservation = resultReservation.rows[0];
+
+      const queryHistory = `
+        INSERT INTO reservation_history (reservation_id, action_description)
+        VALUES ($1, $2);`;
+
+      const valuesHistory = [
+        insertedReservation.id,
+        `Reservation made by ${name} for ${car} from ${start_date} ${start_time} to ${end_date} ${end_time} for the purpose of ${purpose}.`,
+      ];
+
+      await pool.query(queryHistory, valuesHistory);
+
+      res.status(201).json(insertedReservation);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error making reservation." });
+    }
+  } else {
+    res.setHeader("Allow", ["POST"]);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
+};
